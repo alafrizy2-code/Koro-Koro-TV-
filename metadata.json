@@ -1,0 +1,6 @@
+{
+  "name": "Koro Koro TV",
+  "description": "Aplikasi streaming karaoke pribadi khusus Android TV Box dengan tampilan YouTube TV dan navigasi remote control.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
