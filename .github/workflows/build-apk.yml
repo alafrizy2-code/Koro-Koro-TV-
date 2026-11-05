@@ -1,9 +1,12 @@
-name: Build Koro Koro TV APK
+name: Build & Release Koro Koro TV APK
 
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -33,16 +36,30 @@ jobs:
       - name: Build Release APK (Unsigned)
         run: gradle :app:assembleRelease -x lintVitalRelease || true
 
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: koro-koro-tv-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+      - name: Prepare APK files
+        run: |
+          mkdir -p release-apks
+          cp app/build/outputs/apk/debug/*.apk release-apks/koro-koro-tv-debug.apk
+          if ls app/build/outputs/apk/release/*.apk 1> /dev/null 2>&1; then
+            cp app/build/outputs/apk/release/*.apk release-apks/koro-koro-tv-release.apk
+          fi
 
-      - name: Upload Release APK (if generated)
-        if: always()
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: koro-koro-tv-release-apk
-          path: app/build/outputs/apk/release/*.apk
-          if-no-files-found: ignore
+          name: koro-koro-tv-apks
+          path: release-apks/*.apk
+
+      - name: Publish Direct Download Links via GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-apk
+          name: Koro Koro TV - Latest APK
+          body: |
+            Download langsung APK **Koro Koro TV** untuk Android TV Box:
+            - `koro-koro-tv-debug.apk` (Siap pasang langsung)
+            - `koro-koro-tv-release.apk` (Versi release)
+          files: release-apks/*.apk
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
